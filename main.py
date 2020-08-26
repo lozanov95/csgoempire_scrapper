@@ -3,52 +3,55 @@ import time
 import re
 import json
 
-MAX_MONEY = 500.0
-MIN_MONEY = 50.0
 
+class CSGOEmpireScrapper:
+    def __init__(self, max_money=500, min_money=50, pause_after_page_seconds=1, initial_pause_seconds=10):
+        self.url = 'https://csgoempire.com/withdraw#730'
+        self.config = {'MAX_MONEY': max_money, 'MIN_MONEY': min_money,
+                       'PAUSE_AFTER_PAGE_SECONDS': pause_after_page_seconds,
+                       'INITIAL_PAUSE_SECONDS': initial_pause_seconds}
 
-def scrape_items(browser):
-    items_list = []
-    regex = r'(.+[a-zA-Z])\s(\d+\,*\d+\.\d+)\s\+(\d*)%'
-    while True:
-        try:
-            link = browser.find_element_by_link_text('Next')
-            scraped_data = [item.text.replace("\n", " ") for item in browser.find_elements_by_class_name('item__inner')]
-            for item in scraped_data:
-                match = re.search(regex, item)
-                if match is not None:
-                    groups = match.groups()
-                    skin_name, price, percentage = groups[0], float(groups[1].replace(',', '')), groups[2]
-                    if MIN_MONEY <= price <= MAX_MONEY:
-                        items_list.append({'skin_name': skin_name, 'price': price, 'percentage': percentage})
-        except Exception as e:
-            print(e)
-        finally:
-            if link.get_attribute('tabindex') == '-1':
-                break
-            else:
-                try:
-                    link.click()
-                    time.sleep(1)
-                except Exception as e:
-                    print(e)
-    return items_list
+    def scrape_items(self):
+        browser = webdriver.Chrome()
+        browser.get(self.url)
+        time.sleep(self.config['INITIAL_PAUSE_SECONDS'])
+        items_list = []
+        regex = r'(.+[a-zA-Z])\s(\d+\,*\d+\.\d+)\s\+(\d*)%'
+        while True:
+            try:
+                scraped_data = [item.text.replace("\n", " ") for item in browser.find_elements_by_class_name('item__inner')]
+                for item in scraped_data:
+                    match = re.search(regex, item)
+                    if match is not None:
+                        groups = match.groups()
+                        skin_name, price, percentage = groups[0], float(groups[1].replace(',', '')), groups[2]
+                        if self.config['MIN_MONEY'] <= price <= self.config['MAX_MONEY']:
+                            items_list.append({'skin_name': skin_name, 'price': price, 'percentage': percentage})
+            except Exception as e:
+                print(e)
+            finally:
+                link = browser.find_element_by_link_text('Next')
+                if link.get_attribute('tabindex') == '-1':
+                    break
+                else:
+                    try:
+                        link.click()
+                        time.sleep(self.config['PAUSE_AFTER_PAGE_SECONDS'])
+                    except Exception as e:
+                        print(e)
+        self.export_data(items_list)
+        return items_list
 
-
-def export_data(data):
-    with open('items.json', 'w') as f:
-        json.dump({"values": data}, f)
+    def export_data(self, data):
+        with open('items.json', 'w') as f:
+            json.dump({"values": data}, f)
+            return 0
 
 
 def main():
-    url = 'https://csgoempire.com/withdraw#730'
-    browser = webdriver.Chrome()
-    browser.get(url)
-    time.sleep(10)
-    export_data(scrape_items(browser))
-    browser.quit()
+    scrapper = CSGOEmpireScrapper()
+    scrapper.scrape_items()
 
 
-main()
-
-
+if __name__ == '__main__':
+    main()
