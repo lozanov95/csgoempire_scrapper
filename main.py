@@ -6,12 +6,25 @@ import json
 
 class CSGOEmpireScrapper:
     def __init__(self, max_money=500, min_money=50, pause_after_page_seconds=1, initial_pause_seconds=10):
+        """
+        Initializes the CSGO Empire scrapper
+        :param max_money: Max money that you want to look for. default value = 500
+        :param min_money: Min money that you want to look for. default value = 50
+        :param pause_after_page_seconds: Pauses after each time the scrapper clicks next page, so the items can load.
+        default value = 1
+        :param initial_pause_seconds: Pauses initially, so the page could load before the scrapper starts.
+        default value = 10
+        """
         self.url = 'https://csgoempire.com/withdraw#730'
         self.config = {'MAX_MONEY': max_money, 'MIN_MONEY': min_money,
                        'PAUSE_AFTER_PAGE_SECONDS': pause_after_page_seconds,
                        'INITIAL_PAUSE_SECONDS': initial_pause_seconds}
 
     def scrape_items(self):
+        """
+        Scrapes the CSGO Empire withdraw page
+        :return: list of scraped items in JSON format
+        """
         browser = webdriver.Chrome()
         browser.get(self.url)
         time.sleep(self.config['INITIAL_PAUSE_SECONDS'])
@@ -39,18 +52,29 @@ class CSGOEmpireScrapper:
                         time.sleep(self.config['PAUSE_AFTER_PAGE_SECONDS'])
                     except Exception as e:
                         print(e)
-        self.export_data(items_list)
-        return items_list
+
+        json_items = json.dumps({'values': items_list})
+        self.export_data(json_items)
+        return json_items
 
     def export_data(self, data):
-        with open('items.json', 'w') as f:
-            json.dump({"values": data}, f)
-            return 0
+        """
+        Exports the information to items.json file
+        :param data: JSON formatted items data. "values" : [list_of_item_objects]
+        :return: 0 if the file was exported, -1 if there was an exception
+        """
+        try:
+            with open('items.json', 'w') as f:
+                f.write(data)
+                return 0
+        except Exception as e:
+            print(e)
+            return -1
 
 
 def main():
     scrapper = CSGOEmpireScrapper()
-    scrapper.scrape_items()
+    print(scrapper.scrape_items())
 
 
 if __name__ == '__main__':
