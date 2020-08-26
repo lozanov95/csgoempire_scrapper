@@ -3,7 +3,6 @@ import time
 import re
 import json
 
-
 class CSGOEmpireScrapper:
     def __init__(self, max_money=500, min_money=50, pause_after_page_seconds=1, initial_pause_seconds=10):
         """
@@ -32,7 +31,8 @@ class CSGOEmpireScrapper:
         regex = r'(.+[a-zA-Z])\s(\d+\,*\d+\.\d+)\s\+(\d*)%'
         while True:
             try:
-                scraped_data = [item.text.replace("\n", " ") for item in browser.find_elements_by_class_name('item__inner')]
+                scraped_data = [item.text.replace("\n", " ") for item in
+                                browser.find_elements_by_class_name('item__inner')]
                 for item in scraped_data:
                     match = re.search(regex, item)
                     if match is not None:
@@ -57,6 +57,36 @@ class CSGOEmpireScrapper:
         self.export_data(json_items)
         return json_items
 
+    def scrape_items_new(self):
+        browser = webdriver.Chrome()
+        browser.get(self.url)
+        items_list = []
+        regex = r'(?P<skin_quality>[A-Za-z\s|~0-9\.-]{1,30})[>]{2}(?P<weapon_name>.{1,30})[>]{2}(?P<skin_name>.{1,20})' \
+                r'[>]{2}(?P<skin_price>\d+\,{0,1}\d+\.\d{0,2})[>+]{0,3}(?P<percentage>\d{0,2})[%]{0,1}'
+        expression = re.compile(regex)
+        time.sleep(self.config['INITIAL_PAUSE_SECONDS'])
+        while True:
+            try:
+                scraped_items = [item.text.replace('\n', '>>') for item in
+                              browser.find_elements_by_class_name('item__inner')]
+            except Exception as e:
+                print(e)
+            break
+
+        text_items = "".join(scraped_items)
+        matches = expression.finditer(text_items)
+        for match in matches:
+            groups = match.groupdict()
+            inflated_price = float(groups['skin_price'].replace(',', ''))
+            percentage = float(groups['percentage']) if groups['percentage'] is not None else 0
+            current_price = round(inflated_price - (inflated_price * percentage / 100), 2)
+            items_list.append({'skin_quality': groups['skin_quality'].split(' | ')[0],
+                               'weapon_name': groups['weapon_name'],
+                               'skin_name': groups['skin_name'],
+                               'skin_price': current_price
+                               })
+        print(items_list)
+
     def export_data(self, data):
         """
         Exports the information to items.json file
@@ -73,8 +103,9 @@ class CSGOEmpireScrapper:
 
 
 def main():
-    scrapper = CSGOEmpireScrapper()
-    print(scrapper.scrape_items())
+    scrapper = CSGOEmpireScrapper(initial_pause_seconds=5)
+    #print(scrapper.scrape_items())
+    scrapper.scrape_items_new()
 
 
 if __name__ == '__main__':
