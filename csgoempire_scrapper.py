@@ -51,12 +51,12 @@ class CSGOEmpireScrapper:
                                            'skin_price': current_price,
                                            'timestamp': timestamp
                                            })
-                    elif current_price < self.config['MIN_MONEY']:
-                        break
                 link = browser.find_element_by_link_text('Next')
                 if link.get_attribute('tabindex') == '-1':
                     break
                 else:
+                    if current_price < self.config['MIN_MONEY']:
+                        break
                     link.click()
                     time.sleep(self.config['PAUSE_AFTER_PAGE_SECONDS'])
             except Exception as e:
@@ -64,7 +64,6 @@ class CSGOEmpireScrapper:
 
         browser.quit()
         json_data = json.dumps({'values': items_list})
-        self.export_data(json_data)
         return json_data
 
     def export_data(self, data):
