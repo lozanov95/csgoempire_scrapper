@@ -21,7 +21,7 @@ class CSGOEmpireScrapper:
                        'PAUSE_AFTER_PAGE_SECONDS': pause_after_page_seconds,
                        'INITIAL_PAUSE_SECONDS': initial_pause_seconds}
 
-    def scrape_items_new(self):
+    def scrape_items(self):
         browser = webdriver.Chrome()
         browser.get(self.url)
         items_list = []
@@ -84,7 +84,7 @@ class CSGOEmpireScrapper:
 
 def main():
     scrapper = CSGOEmpireScrapper(initial_pause_seconds=7)
-    scrapper.scrape_items_new()
+    scrapper.scrape_items()
 
 
 if __name__ == '__main__':
