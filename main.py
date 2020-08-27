@@ -21,12 +21,10 @@ class CSGOEmpireScrapper:
                        'PAUSE_AFTER_PAGE_SECONDS': pause_after_page_seconds,
                        'INITIAL_PAUSE_SECONDS': initial_pause_seconds}
 
-    # TODO: Do the regex and price check on the scrapping row
-    def scrape_items(self):
+    def scrape_items_new(self):
         browser = webdriver.Chrome()
         browser.get(self.url)
         items_list = []
-        scraped_items = []
         regex = r'(?P<skin_quality>[A-Za-z\s|~0-9\.-]{1,30})[>]{2}(?P<weapon_name>.{1,30})[>]{2}(?P<skin_name>.{1,20})' \
                 r'[>]{2}(?P<skin_price>\d+\,{0,1}\d+\.\d{0,2})[>+]{0,3}(?P<percentage>\d{0,2})[%]{0,1}'
         expression = re.compile(regex)
@@ -35,7 +33,26 @@ class CSGOEmpireScrapper:
         while True:
             try:
                 for item in browser.find_elements_by_class_name('item__inner'):
-                    scraped_items.append(item.text.replace('\n', '>>'))
+                    text = item.text.replace('\n', '>>')
+                    match = expression.match(text)
+                    if not match:
+                        continue
+                    groups = match.groupdict()
+                    inflated_price = float(groups['skin_price'].replace(',', ''))
+                    if groups['percentage'] != "":
+                        percentage = float(groups['percentage'])
+                    else:
+                        percentage = 0
+                    current_price = round(inflated_price / (percentage / 100 + 1), 2)
+                    if self.config['MIN_MONEY'] <= current_price <= self.config['MAX_MONEY']:
+                        items_list.append({'skin_quality': groups['skin_quality'].split(' | ')[0],
+                                           'weapon_name': groups['weapon_name'],
+                                           'skin_name': groups['skin_name'],
+                                           'skin_price': current_price,
+                                           'timestamp': timestamp
+                                           })
+                    elif current_price < self.config['MIN_MONEY']:
+                        break
                 link = browser.find_element_by_link_text('Next')
                 if link.get_attribute('tabindex') == '-1':
                     break
@@ -44,26 +61,11 @@ class CSGOEmpireScrapper:
                     time.sleep(self.config['PAUSE_AFTER_PAGE_SECONDS'])
             except Exception as e:
                 print(e)
+
         browser.quit()
-        text_items = "".join(scraped_items)
-        matches = expression.finditer(text_items)
-        for match in matches:
-            groups = match.groupdict()
-            inflated_price = float(groups['skin_price'].replace(',', ''))
-            percentage = float(groups['percentage']) if groups['percentage'] is not None else 0
-            current_price = round(inflated_price - (inflated_price * percentage / 100), 2)
-            if self.config['MIN_MONEY'] <= current_price <= self.config['MAX_MONEY']:
-                items_list.append({'skin_quality': groups['skin_quality'].split(' | ')[0],
-                                   'weapon_name': groups['weapon_name'],
-                                   'skin_name': groups['skin_name'],
-                                   'skin_price': current_price,
-                                   'timestamp': timestamp
-                                   })
-            elif current_price < self.config['MIN_MONEY']:
-                break
-        final_data = json.dumps({'values': items_list})
-        self.export_data(final_data)
-        return final_data
+        json_data = json.dumps({'values': items_list})
+        self.export_data(json_data)
+        return json_data
 
     def export_data(self, data):
         """
@@ -82,7 +84,7 @@ class CSGOEmpireScrapper:
 
 def main():
     scrapper = CSGOEmpireScrapper(initial_pause_seconds=7)
-    scrapper.scrape_items()
+    scrapper.scrape_items_new()
 
 
 if __name__ == '__main__':
