@@ -15,7 +15,8 @@ def main():
         for value in data['values']:
             existing = False
             for item in priced_items:
-                if item.get('weapon_name') == value['weapon_name'] and item.get('skin_name') == value['skin_name']:
+                if item.get('weapon_name') == value['weapon_name'] and item.get('skin_name') == value['skin_name'] \
+                        and item.get('skin_quality') == value['skin_quality']:
                     existing = True
                     if item['min_price'] > value['skin_price']:
                         item['min_price'] = value['skin_price']
