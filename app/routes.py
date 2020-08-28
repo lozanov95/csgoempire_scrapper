@@ -1,24 +1,25 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, jsonify
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Item
 from app.csgoempire_scrapper import CSGOEmpireScrapper
 import json
+from datetime import datetime
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    #items = Item.query.all()
-    items = ['1']
+    items = Item.query.all()
     return render_template('index.html', items=items)
 
 
+# TODO: fix the db.session.add / commit
 @login_required
 @app.route('/scrape')
 def scrape():
-    scrapper = CSGOEmpireScrapper()
+    scrapper = CSGOEmpireScrapper(min_money=2000)
     data = json.loads(scrapper.scrape_items())
     priced_items = []
     try:
@@ -40,13 +41,20 @@ def scrape():
                                 max_price=value['max_price'],
                                 timestamp=value['timestamp'])
                 priced_items.append(new_item)
-        db.session.bulk_save_objects(priced_items)
+    except Exception as e:
+        print('exception on adding items')
+        print(e)
+    try:
+        for item in priced_items:
+            db.session.add(item)
         db.session.commit()
     except Exception as e:
+        print('exception on adding items to db')
         print(e)
         db.session.rollback()
     finally:
-        return render_template('index.html', priced_items=priced_items, header='Newly scraped items:')
+        items = Item.query.all()
+        return render_template('index.html', items=items)
 
 
 @app.route('/login', methods=['GET', 'POST'])
