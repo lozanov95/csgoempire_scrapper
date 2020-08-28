@@ -1,4 +1,4 @@
-from csgoempire_scrapper import CSGOEmpireScrapper
+from app.csgoempire_scrapper import CSGOEmpireScrapper
 import json
 
 
@@ -31,7 +31,7 @@ def main():
         print(e)
     finally:
         json_data = json.dumps({'values': (sorted(priced_items, key=lambda x: (x['weapon_name'], x['skin_name'])))})
-        export_items('priced_items.json', json_data)
+        export_items('../priced_items.json', json_data)
 
 
 main()

@@ -23,3 +23,15 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    skin_quality = db.Column(db.String(64))
+    weapon_name = db.Column(db.String(64))
+    min_price = db.Column(db.Integer)
+    max_price = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime)
+
+    def __repr__(self):
+        return f'{self.skin_quality} {self.weapon_name}, minimum price {self.min_price}, maximum price {self.max_price}, scanned at {self.timestamp}'

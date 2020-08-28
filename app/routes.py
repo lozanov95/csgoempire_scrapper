@@ -3,12 +3,41 @@ from flask import render_template, flash, redirect, url_for
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User
+from app.csgoempire_scrapper import CSGOEmpireScrapper
+import json
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    return render_template('index')
+
+
+@login_required
+@app.route('/scrape')
+def scrape():
+    scrapper = CSGOEmpireScrapper()
+    data = json.loads(scrapper.scrape_items())
+    priced_items = []
+    try:
+        for value in data['values']:
+            existing = False
+            for item in priced_items:
+                if item.get('weapon_name') == value['weapon_name'] and item.get('skin_name') == value['skin_name'] \
+                        and item.get('skin_quality') == value['skin_quality']:
+                    existing = True
+                    if item['min_price'] > value['skin_price']:
+                        item['min_price'] = value['skin_price']
+                    if item['max_price'] < value['skin_price']:
+                        item['max_price'] = value['skin_price']
+                    break
+            if not existing:
+                priced_items.append({'skin_quality': value['skin_quality'], 'weapon_name': value['weapon_name'],
+                                     'skin_name': value['skin_name'], 'min_price': value['skin_price'],
+                                     'max_price': value['skin_price'], 'timestamp': value['timestamp']})
+    except Exception as e:
+        print(e)
+    return render_template('index.html', priced_items=priced_items)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -26,6 +55,7 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
+@login_required
 @app.route('/logout')
 def logout():
     logout_user()
