@@ -61,10 +61,10 @@ class CSGOEmpireScrapper:
                     time.sleep(self.config['PAUSE_AFTER_PAGE_SECONDS'])
             except Exception as e:
                 print(e)
-
         browser.quit()
         json_data = json.dumps({'values': items_list})
         return json_data
+
 
 def main():
     scrapper = CSGOEmpireScrapper(initial_pause_seconds=7)

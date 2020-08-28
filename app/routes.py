@@ -5,7 +5,6 @@ from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Item
 from app.csgoempire_scrapper import CSGOEmpireScrapper
 import json
-from datetime import datetime
 
 
 @app.route('/')
@@ -15,37 +14,41 @@ def index():
     return render_template('index.html', items=items)
 
 
-# TODO: fix the db.session.add / commit
 @login_required
 @app.route('/scrape')
 def scrape():
-    scrapper = CSGOEmpireScrapper(min_money=2000)
+    scrapper = CSGOEmpireScrapper()
     data = json.loads(scrapper.scrape_items())
     priced_items = []
     try:
         for value in data['values']:
             existing = False
-            for item in priced_items:
-                if item.get('weapon_name') == value['weapon_name'] and item.get('skin_name') == value['skin_name'] \
-                        and item.get('skin_quality') == value['skin_quality']:
-                    existing = True
-                    if item['min_price'] > value['skin_price']:
-                        item['min_price'] = value['skin_price']
-                    if item['max_price'] < value['skin_price']:
-                        item['max_price'] = value['skin_price']
-                    break
-            if not existing:
-                new_item = Item(skin_quality=value['skin_quality'],
-                                weapon_name=value['weapon_name'],
-                                min_price=value['min_price'],
-                                max_price=value['max_price'],
-                                timestamp=value['timestamp'])
-                priced_items.append(new_item)
+            try:
+                for item in priced_items:
+                    if item.get('weapon_name') == value['weapon_name'] and item.get('skin_name') == value['skin_name'] \
+                            and item.get('skin_quality') == value['skin_quality']:
+                        existing = True
+                        if item['min_price'] > value['skin_price']:
+                            item['min_price'] = value['skin_price']
+                        if item['max_price'] < value['skin_price']:
+                            item['max_price'] = value['skin_price']
+                        break
+                if not existing:
+                    new_item = Item(skin_quality=value['skin_quality'],
+                                    weapon_name=value['weapon_name'],
+                                    min_price=value['skin_price'],
+                                    max_price=value['skin_price'],
+                                    timestamp=value['timestamp'],
+                                    skin_name=value['skin_name'])
+                    priced_items.append(new_item)
+            except Exception as e:
+                print(e)
     except Exception as e:
         print('exception on adding items')
         print(e)
     try:
         for item in priced_items:
+            print(item)
             db.session.add(item)
         db.session.commit()
     except Exception as e:
