@@ -1,6 +1,6 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for, jsonify
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, SearchForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Item
 from app.csgoempire_scrapper import CSGOEmpireScrapper
@@ -58,6 +58,23 @@ def scrape():
     finally:
         items = Item.query.all()
         return render_template('index.html', items=items)
+
+
+@login_required
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    form = SearchForm()
+    if form.validate_on_submit():
+        if form.skin_name != "" and form.weapon_name != "":
+            items = Item.query.filter(Item.weapon_name.contains(form.weapon_name)) and Item.query.filter(Item.skin_name.contains(form.skin_name))
+            return render_template('search.html', items=items, form=form)
+        elif form.skin_name != "":
+            items = Item.query.filter(Item.skin_name.contains(form.skin_name))
+            return render_template('search.html', items=items, form=form)
+        elif form.weapon_name != "":
+            items = Item.query.filter(Item.weapon_name.contains(form.weapon_name))
+            return render_template('search.html', items=items, form=form)
+    return render_template('index.html', items=['No items'])
 
 
 @app.route('/login', methods=['GET', 'POST'])

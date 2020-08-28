@@ -5,7 +5,22 @@
     {% if header %}
         {{ header }}
     {% endif %}
+    <div class="row">
+        <div class="col-md-2">Skin quality</div>
+        <div class="col-md-2">Weapon name</div>
+        <div class="col-md-2">Skin name</div>
+        <div class="col-md-2">Minimum price</div>
+        <div class="col-md-2">Maximum price</div>
+        <div class="col-md-2">Scanned on</div>
+    </div>
     {% for item in items %}
-    <p>{{ item }}</p>
+    <div class="row">
+        <div class="col-md-2">{{ item.skin_quality }}</div>
+        <div class="col-md-2">{{ item.weapon_name }}</div>
+        <div class="col-md-2">{{ item.skin_name }}</div>
+        <div class="col-md-2">{{ item.min_price }}</div>
+        <div class="col-md-2">{{ item.max_price }}</div>
+        <div class="col-md-2">{{ item.timestamp }}</div>
+    </div>
     {% endfor %}
 {% endblock %}
