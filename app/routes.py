@@ -2,7 +2,7 @@ from app import app, db
 from flask import render_template, flash, redirect, url_for
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
+from app.models import User, Item
 from app.csgoempire_scrapper import CSGOEmpireScrapper
 import json
 
@@ -10,7 +10,9 @@ import json
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    #items = Item.query.all()
+    items = ['1']
+    return render_template('index.html', items=items)
 
 
 @login_required
@@ -32,12 +34,19 @@ def scrape():
                         item['max_price'] = value['skin_price']
                     break
             if not existing:
-                priced_items.append({'skin_quality': value['skin_quality'], 'weapon_name': value['weapon_name'],
-                                     'skin_name': value['skin_name'], 'min_price': value['skin_price'],
-                                     'max_price': value['skin_price'], 'timestamp': value['timestamp']})
+                new_item = Item(skin_quality=value['skin_quality'],
+                                weapon_name=value['weapon_name'],
+                                min_price=value['min_price'],
+                                max_price=value['max_price'],
+                                timestamp=value['timestamp'])
+                priced_items.append(new_item)
+        db.session.bulk_save_objects(priced_items)
+        db.session.commit()
     except Exception as e:
         print(e)
-    return render_template('index.html', priced_items=priced_items)
+        db.session.rollback()
+    finally:
+        return render_template('index.html', priced_items=priced_items, header='Newly scraped items:')
 
 
 @app.route('/login', methods=['GET', 'POST'])

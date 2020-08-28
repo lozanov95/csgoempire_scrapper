@@ -1,8 +1,8 @@
-"""added User and Item models
+"""adding item and user tables
 
-Revision ID: 1d90066e50a9
+Revision ID: d92740483ffc
 Revises: 
-Create Date: 2020-08-28 12:51:04.049206
+Create Date: 2020-08-28 15:55:36.521654
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1d90066e50a9'
+revision = 'd92740483ffc'
 down_revision = None
 branch_labels = None
 depends_on = None

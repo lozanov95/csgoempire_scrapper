@@ -66,21 +66,6 @@ class CSGOEmpireScrapper:
         json_data = json.dumps({'values': items_list})
         return json_data
 
-    def export_data(self, data):
-        """
-        Exports the information to items.json file
-        :param data: JSON formatted items data. "values" : [list_of_item_objects]
-        :return: 0 if the file was exported, -1 if there was an exception
-        """
-        try:
-            with open('items.json', 'a') as f:
-                f.write(data)
-                return 0
-        except Exception as e:
-            print(e)
-            return -1
-
-
 def main():
     scrapper = CSGOEmpireScrapper(initial_pause_seconds=7)
     scrapper.scrape_items()

@@ -2,5 +2,10 @@
 
 
 {% block app_content%}
-<h1>index</h1>
+    {% if header %}
+        {{ header }}
+    {% endif %}
+    {% for item in items %}
+    <p>{{ item }}</p>
+    {% endfor %}
 {% endblock %}
