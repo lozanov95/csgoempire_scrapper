@@ -1,5 +1,5 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for, jsonify
+from flask import render_template, flash, redirect, url_for
 from app.forms import LoginForm, RegistrationForm, SearchForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Item
@@ -10,7 +10,7 @@ import json
 @app.route('/')
 @app.route('/index')
 def index():
-    items = Item.query.all()
+    items = Item.query.order_by(Item.timestamp.desc()).all()
     return render_template('index.html', items=items)
 
 
@@ -55,8 +55,7 @@ def scrape():
         print(e)
         db.session.rollback()
     finally:
-        items = Item.query.all()
-        return render_template('index.html', items=items)
+        return redirect(url_for('index'))
 
 
 @login_required
