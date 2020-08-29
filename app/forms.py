@@ -32,4 +32,5 @@ class RegistrationForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     skin_name = StringField('Skin name')
-    weapon_name = StringField('Weapon_name')
+    weapon_name = StringField('Weapon name')
+    submit = SubmitField('Search')

@@ -61,19 +61,26 @@ def scrape():
 @login_required
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    form = SearchForm()
-    if form.validate_on_submit():
-        if form.skin_name != "" and form.weapon_name != "":
-            items = Item.query.filter(Item.weapon_name.contains(form.weapon_name)) and\
-                    Item.query.filter(Item.skin_name.contains(form.skin_name))
-            return render_template('search.html', items=items, form=form)
-        elif form.skin_name != "":
-            items = Item.query.filter(Item.skin_name.contains(form.skin_name))
-            return render_template('search.html', items=items, form=form)
-        elif form.weapon_name != "":
-            items = Item.query.filter(Item.weapon_name.contains(form.weapon_name))
-            return render_template('search.html', items=items, form=form)
-    return render_template('index.html', items=['No items'])
+    if current_user.is_authenticated:
+        form = SearchForm()
+        if form.validate_on_submit():
+            if form.skin_name.data != "" and form.weapon_name.data != "":
+                print('has name and skin')
+                print(form.weapon_name.data)
+                items = Item.query.filter(Item.weapon_name.contains(form.weapon_name.data),
+                                          Item.skin_name.contains(form.skin_name.data))
+                return render_template('index.html', items=items, form=form)
+            elif form.skin_name.data != "":
+                print('has skin')
+                items = Item.query.filter(Item.skin_name.contains(form.skin_name.data)).all()
+                print(items)
+                return render_template('index.html', items=items, form=form)
+            elif form.weapon_name.data != "":
+                print('has wep name')
+                items = Item.query.filter(Item.weapon_name.contains(form.weapon_name.data))
+                return render_template('index.html', items=items, form=form)
+        return render_template('search.html', form=form)
+    return redirect(url_for('index'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
