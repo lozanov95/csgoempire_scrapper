@@ -64,7 +64,8 @@ def search():
     form = SearchForm()
     if form.validate_on_submit():
         if form.skin_name != "" and form.weapon_name != "":
-            items = Item.query.filter(Item.weapon_name.contains(form.weapon_name)) and Item.query.filter(Item.skin_name.contains(form.skin_name))
+            items = Item.query.filter(Item.weapon_name.contains(form.weapon_name)) and\
+                    Item.query.filter(Item.skin_name.contains(form.skin_name))
             return render_template('search.html', items=items, form=form)
         elif form.skin_name != "":
             items = Item.query.filter(Item.skin_name.contains(form.skin_name))
