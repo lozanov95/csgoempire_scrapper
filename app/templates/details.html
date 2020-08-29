@@ -13,7 +13,7 @@
                 <th scope="col">Skin name</th>
                 <th scope="col">Min price</th>
                 <th scope="col">Max price</th>
-                <th scope="col">More details</th>
+                <th scope="col">Scanned on</th>
             </tr>
         </thead>
         <tbody>
@@ -24,7 +24,7 @@
                 <td>{{ item.skin_name }}</td>
                 <td>{{ item.min_price }}</td>
                 <td>{{ item.max_price }}</td>
-                <td><a href="{{ url_for('details', skin_quality=item.skin_quality, weapon_name=item.weapon_name, skin_name=item.skin_name)}}">Details</a></td>
+                <td>{{ item.timestamp }}</td>
             </tr>
         {% endfor %}
         </tbody>

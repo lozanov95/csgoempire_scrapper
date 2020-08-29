@@ -7,6 +7,7 @@ from app.csgoempire_scrapper import CSGOEmpireScrapper
 import json
 
 
+# TODO: display just one set of items with the min/max price
 @app.route('/')
 @app.route('/index')
 def index():
@@ -81,6 +82,16 @@ def search():
                 return render_template('index.html', items=items, form=form)
         return render_template('search.html', form=form)
     return redirect(url_for('index'))
+
+
+# TODO: this functionality doesn't work for some skins (some ak-47 skins for example)
+@login_required
+@app.route('/details/<skin_quality>-<weapon_name>-<skin_name>', methods=['GET', 'POST'])
+def details(skin_quality, weapon_name, skin_name):
+    items = Item.query.filter(Item.skin_name.contains(skin_name),
+                              Item.weapon_name.contains(weapon_name),
+                              Item.skin_quality.contains(skin_quality)).order_by(Item.timestamp.desc())
+    return render_template('details.html', items=items)
 
 
 @app.route('/login', methods=['GET', 'POST'])
