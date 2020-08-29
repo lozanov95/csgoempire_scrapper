@@ -48,7 +48,6 @@ def scrape():
         print(e)
     try:
         for item in priced_items:
-            print(item)
             db.session.add(item)
         db.session.commit()
     except Exception as e:
