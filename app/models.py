@@ -32,7 +32,6 @@ class PricedItems(db.Model):
     weapon_name = db.Column(db.String(64))
     min_price = db.Column(db.Float)
     max_price = db.Column(db.Float)
-    timestamp = db.Column(db.String(64))
 
     def get(self, value):
         if value == 'weapon_name':
@@ -45,11 +44,9 @@ class PricedItems(db.Model):
             return self.min_price
         elif value == 'max_price':
             return self.max_price
-        elif value == 'timestamp':
-            return self.timestamp
 
     def __repr__(self):
-        return f'{self.skin_quality} {self.weapon_name} {self.skin_name}, minimum price {self.min_price}, maximum price {self.max_price}, scanned at {self.timestamp}'
+        return f'{self.skin_quality} {self.weapon_name} {self.skin_name}, minimum price {self.min_price}, maximum price {self.max_price}'
 
 
 class Item(db.Model):

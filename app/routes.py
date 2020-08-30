@@ -2,23 +2,22 @@ from app import app, db
 from flask import render_template, flash, redirect, url_for
 from app.forms import LoginForm, RegistrationForm, SearchForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Item
+from app.models import User, Item, PricedItems
 from app.csgoempire_scrapper import CSGOEmpireScrapper
 import json
 
 
-# TODO: display just one set of items with the min/max price
 @app.route('/')
 @app.route('/index')
 def index():
-    items = Item.query.order_by(Item.timestamp.desc()).all()
+    items = PricedItems.query.order_by(PricedItems.weapon_name, PricedItems.skin_quality, PricedItems.max_price)
     return render_template('index.html', items=items)
 
 
 @login_required
 @app.route('/scrape')
 def scrape():
-    scrapper = CSGOEmpireScrapper()
+    scrapper = CSGOEmpireScrapper(initial_pause_seconds=5)
     data = json.loads(scrapper.scrape_items())
     priced_items = []
     try:
@@ -26,13 +25,13 @@ def scrape():
             existing = False
             try:
                 for item in priced_items:
-                    if item.get('weapon_name') == value['weapon_name'] and item.get('skin_name') == value['skin_name'] \
-                            and item.get('skin_quality') == value['skin_quality']:
+                    if item.weapon_name == value['weapon_name'] and item.skin_name == value['skin_name'] \
+                            and item.skin_quality == value['skin_quality']:
                         existing = True
-                        if item['min_price'] > value['skin_price']:
-                            item['min_price'] = value['skin_price']
-                        if item['max_price'] < value['skin_price']:
-                            item['max_price'] = value['skin_price']
+                        if item.min_price > value['skin_price']:
+                            item.min_price = value['skin_price']
+                        if item.max_price < value['skin_price']:
+                            item.max_price = value['skin_price']
                         break
                 if not existing:
                     new_item = Item(skin_quality=value['skin_quality'],
@@ -45,18 +44,40 @@ def scrape():
             except Exception as e:
                 print(e)
     except Exception as e:
-        print('exception on adding items')
         print(e)
     try:
         for item in priced_items:
             db.session.add(item)
         db.session.commit()
     except Exception as e:
-        print('exception on adding items to db')
         print(e)
         db.session.rollback()
-    finally:
-        return redirect(url_for('index'))
+
+    for priced_item in priced_items:
+        existing = False
+        new_items = PricedItems.query.all()
+        for new_item in new_items:
+            if new_item.weapon_name == priced_item.skin_quality and new_item.skin_name == priced_item.skin_name and new_item.skin_quality == priced_item.skin_quality:
+                existing = True
+                print(new_item)
+                if new_item.max_price < priced_item.max_price:
+                    new_item.max_price = priced_item.max_price
+                if new_item.min_price > priced_item.min_price:
+                    new_item.min_price = priced_item.min_price
+                break
+        if not existing:
+            new_priced_item = PricedItems(weapon_name=priced_item.weapon_name,
+                                          skin_quality=priced_item.skin_quality,
+                                          skin_name=priced_item.skin_name,
+                                          min_price=priced_item.min_price,
+                                          max_price=priced_item.max_price)
+            try:
+                db.session.add(new_priced_item)
+                db.session.commit()
+            except Exception as e:
+                print(e)
+                db.session.rollback()
+    return redirect(url_for('index'))
 
 
 @login_required
