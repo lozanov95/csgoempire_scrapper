@@ -56,9 +56,10 @@ def scrape():
         existing = False
         new_items = PricedItems.query.all()
         for new_item in new_items:
-            if new_item.weapon_name == priced_item.skin_quality and new_item.skin_name == priced_item.skin_name and new_item.skin_quality == priced_item.skin_quality:
+            if new_item.weapon_name == priced_item.weapon_name and\
+                    new_item.skin_name == priced_item.skin_name and\
+                    new_item.skin_quality == priced_item.skin_quality:
                 existing = True
-                print(new_item)
                 if new_item.max_price < priced_item.max_price:
                     new_item.max_price = priced_item.max_price
                 if new_item.min_price > priced_item.min_price:
