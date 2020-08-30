@@ -10,7 +10,7 @@ import json
 @app.route('/')
 @app.route('/index')
 def index():
-    items = PricedItems.query.order_by(PricedItems.weapon_name, PricedItems.skin_quality, PricedItems.max_price)
+    items = PricedItems.query.order_by(PricedItems.weapon_name, PricedItems.max_price.desc())
     return render_template('index.html', items=items)
 
 
@@ -52,7 +52,6 @@ def scrape():
     except Exception as e:
         print(e)
         db.session.rollback()
-
     for priced_item in priced_items:
         existing = False
         new_items = PricedItems.query.all()
@@ -105,13 +104,13 @@ def search():
     return redirect(url_for('index'))
 
 
-# TODO: this functionality doesn't work for some skins (some ak-47 skins for example)
 @login_required
-@app.route('/details/<skin_quality>-<weapon_name>-<skin_name>', methods=['GET', 'POST'])
-def details(skin_quality, weapon_name, skin_name):
-    items = Item.query.filter(Item.skin_name.contains(skin_name),
-                              Item.weapon_name.contains(weapon_name),
-                              Item.skin_quality.contains(skin_quality)).order_by(Item.timestamp.desc())
+@app.route('/details/<id>', methods=['GET', 'POST'])
+def details(id):
+    scanned_item = PricedItems.query.filter_by(id=id).first()
+    items = Item.query.filter_by(weapon_name=scanned_item.weapon_name,
+                                 skin_name=scanned_item.skin_name,
+                                 skin_quality=scanned_item.skin_quality)
     return render_template('details.html', items=items)
 
 

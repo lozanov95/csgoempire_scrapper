@@ -24,7 +24,7 @@
                 <td>{{ item.skin_name }}</td>
                 <td>{{ item.min_price }}</td>
                 <td>{{ item.max_price }}</td>
-                <td><a href="{{ url_for('details', skin_quality=item.skin_quality, weapon_name=item.weapon_name, skin_name=item.skin_name)}}">Details</a></td>
+                <td><a href="{{ url_for('details', id=item.id)}}">Details</a></td>
             </tr>
         {% endfor %}
         </tbody>
