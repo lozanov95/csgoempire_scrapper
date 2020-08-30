@@ -56,13 +56,15 @@ def scrape():
         existing = False
         new_items = PricedItems.query.all()
         for new_item in new_items:
-            if new_item.weapon_name == priced_item.skin_quality and new_item.skin_name == priced_item.skin_name and new_item.skin_quality == priced_item.skin_quality:
+            if new_item.weapon_name == priced_item.weapon_name and\
+                    new_item.skin_name == priced_item.skin_name and\
+                    new_item.skin_quality == priced_item.skin_quality:
                 existing = True
-                print(new_item)
                 if new_item.max_price < priced_item.max_price:
                     new_item.max_price = priced_item.max_price
                 if new_item.min_price > priced_item.min_price:
                     new_item.min_price = priced_item.min_price
+                db.session.commit()
                 break
         if not existing:
             new_priced_item = PricedItems(weapon_name=priced_item.weapon_name,
@@ -86,18 +88,15 @@ def search():
         form = SearchForm()
         if form.validate_on_submit():
             if form.skin_name.data != "" and form.weapon_name.data != "":
-                print('has name and skin')
                 print(form.weapon_name.data)
                 items = Item.query.filter(Item.weapon_name.contains(form.weapon_name.data),
                                           Item.skin_name.contains(form.skin_name.data))
                 return render_template('index.html', items=items, form=form)
             elif form.skin_name.data != "":
-                print('has skin')
                 items = Item.query.filter(Item.skin_name.contains(form.skin_name.data)).all()
                 print(items)
                 return render_template('index.html', items=items, form=form)
             elif form.weapon_name.data != "":
-                print('has wep name')
                 items = Item.query.filter(Item.weapon_name.contains(form.weapon_name.data))
                 return render_template('index.html', items=items, form=form)
         return render_template('search.html', form=form)
@@ -110,7 +109,7 @@ def details(id):
     scanned_item = PricedItems.query.filter_by(id=id).first()
     items = Item.query.filter_by(weapon_name=scanned_item.weapon_name,
                                  skin_name=scanned_item.skin_name,
-                                 skin_quality=scanned_item.skin_quality)
+                                 skin_quality=scanned_item.skin_quality).order_by(Item.timestamp.desc())
     return render_template('details.html', items=items)
 
 
