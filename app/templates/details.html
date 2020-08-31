@@ -24,7 +24,7 @@
                 <td>{{ item.skin_name }}</td>
                 <td>{{ item.min_price }}</td>
                 <td>{{ item.max_price }}</td>
-                <td>{{ item.timestamp }}</td>
+                <td>{{ moment(item.timestamp).format('LLL') }}</td>
             </tr>
         {% endfor %}
         </tbody>
