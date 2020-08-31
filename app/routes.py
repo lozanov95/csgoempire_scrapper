@@ -13,7 +13,7 @@ def index():
     return render_template('index.html', items=items)
 
 
-@login_required
+# @login_required
 @app.route('/scrape')
 def scrape():
     scrapper = CSGOEmpireScrapper()
@@ -79,7 +79,7 @@ def scrape():
     return redirect(url_for('index'))
 
 
-@login_required
+# @login_required
 @app.route('/details/<id>', methods=['GET', 'POST'])
 def details(id):
     scanned_item = PricedItems.query.filter_by(id=id).first()
