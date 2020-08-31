@@ -1,10 +1,9 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for
-from app.forms import LoginForm, RegistrationForm, SearchForm
+from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Item, PricedItems
 from app.csgoempire_scrapper import CSGOEmpireScrapper
-import json
 
 
 @app.route('/')
@@ -77,31 +76,6 @@ def scrape():
             except Exception as e:
                 print(e)
                 db.session.rollback()
-    return redirect(url_for('index'))
-
-
-@login_required
-@app.route('/search', methods=['GET', 'POST'])
-def search():
-    if current_user.is_authenticated:
-        form = SearchForm()
-        if form.validate_on_submit():
-            if form.skin_name.data != "" and form.weapon_name.data != "":
-                print('has name and skin')
-                print(form.weapon_name.data)
-                items = Item.query.filter(Item.weapon_name.contains(form.weapon_name.data),
-                                          Item.skin_name.contains(form.skin_name.data))
-                return render_template('index.html', items=items, form=form)
-            elif form.skin_name.data != "":
-                print('has skin')
-                items = Item.query.filter(Item.skin_name.contains(form.skin_name.data)).all()
-                print(items)
-                return render_template('index.html', items=items, form=form)
-            elif form.weapon_name.data != "":
-                print('has wep name')
-                items = Item.query.filter(Item.weapon_name.contains(form.weapon_name.data))
-                return render_template('index.html', items=items, form=form)
-        return render_template('search.html', form=form)
     return redirect(url_for('index'))
 
 
