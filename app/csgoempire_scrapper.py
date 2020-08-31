@@ -1,5 +1,6 @@
 from selenium import webdriver
 from datetime import datetime
+from app.models import Item
 import time
 import re
 import json
@@ -28,7 +29,7 @@ class CSGOEmpireScrapper:
         regex = r'(?P<skin_quality>[A-Za-z\s|~0-9\.-]{1,30})[>]{2}(?P<weapon_name>.{1,30})[>]{2}(?P<skin_name>.{1,20})' \
                 r'[>]{2}(?P<skin_price>\d+\,{0,1}\d+\.\d{0,2})[>+]{0,3}(?P<percentage>\d{0,2})[%]{0,1}'
         expression = re.compile(regex)
-        timestamp = str(datetime.utcnow())
+        timestamp = datetime.utcnow()
         time.sleep(self.config['INITIAL_PAUSE_SECONDS'])
         while True:
             try:
@@ -45,12 +46,12 @@ class CSGOEmpireScrapper:
                         percentage = 0
                     current_price = round(inflated_price / (percentage / 100 + 1), 2)
                     if self.config['MIN_MONEY'] <= current_price <= self.config['MAX_MONEY']:
-                        items_list.append({'skin_quality': groups['skin_quality'].split(' | ')[0],
-                                           'weapon_name': groups['weapon_name'],
-                                           'skin_name': groups['skin_name'],
-                                           'skin_price': current_price,
-                                           'timestamp': timestamp
-                                           })
+                        items_list.append(Item(skin_quality=groups['skin_quality'].split(' | ')[0],
+                                               weapon_name=groups['weapon_name'],
+                                               skin_name=groups['skin_name'],
+                                               min_price=current_price,
+                                               max_price=current_price,
+                                               timestamp=timestamp))
                 link = browser.find_element_by_link_text('Next')
                 if link.get_attribute('tabindex') == '-1':
                     break
@@ -62,8 +63,7 @@ class CSGOEmpireScrapper:
             except Exception as e:
                 print(e)
         browser.quit()
-        json_data = json.dumps({'values': items_list})
-        return json_data
+        return items_list
 
 
 def main():
