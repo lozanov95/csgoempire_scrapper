@@ -18,12 +18,12 @@
         </thead>
         <tbody>
         {% for item in items %}
-            <tr>
-                <td>{{ item.skin_quality }}</td>
-                <td>{{ item.weapon_name }}</td>
-                <td>{{ item.skin_name }}</td>
-                <td>{{ item.min_price }}</td>
-                <td>{{ item.max_price }}</td>
+            <tr id="item_row">
+                <td id="skin_quality">{{ item.skin_quality }}</td>
+                <td id="weapon_name">{{ item.weapon_name }}</td>
+                <td id="skin_name">{{ item.skin_name }}</td>
+                <td id="min_price">{{ item.min_price }}</td>
+                <td id="max_price">{{ item.max_price }}</td>
                 <td>{{ moment(item.timestamp).format('LLL') }}</td>
             </tr>
         {% endfor %}

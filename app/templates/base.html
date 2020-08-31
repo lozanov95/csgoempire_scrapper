@@ -14,6 +14,12 @@
     <a class="navbar-brand" href="{{ url_for('login') }}">Login</a>
     <a class="navbar-brand" href="{{ url_for('register') }}">Register</a>
     {% endif %}
+    <form class="navbar-form navbar-left">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" id="search">
+        </div>
+      </form>
+    <div></div>
 </nav>
 {% endblock %}
 
@@ -26,4 +32,23 @@
 {% block scripts%}
     {{ super() }}
     {{ moment.include_moment() }}
+    <script>
+        $(document).ready(function(){
+            item_rows = $('tr[id="item_row"]')
+        });
+        $('#search').on('input', function(){
+           let search_text = $('#search').val().toLowerCase()
+           Array.from(item_rows).forEach(function(el){
+                weapon_name = el.children['weapon_name'].innerText
+                skin_name = el.children['skin_name'].innerText
+                skin_quality = el.children['skin_quality'].innerText
+                name = (weapon_name + " " + skin_name + " " + skin_quality).toLowerCase()
+                if(name.includes(search_text)){
+                    $(el).show()
+                }else{
+                    $(el).hide()
+                }
+           });
+        });
+    </script>
 {% endblock %}
