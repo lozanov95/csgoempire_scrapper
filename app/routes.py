@@ -9,7 +9,7 @@ from app.csgoempire_scrapper import CSGOEmpireScrapper
 @app.route('/')
 @app.route('/index')
 def index():
-    items = PricedItems.query.order_by(PricedItems.weapon_name, PricedItems.max_price.desc())
+    items = PricedItems.query.order_by(PricedItems.weapon_name, PricedItems.skin_name, PricedItems.min_price.desc())
     return render_template('index.html', items=items)
 
 
